@@ -21,14 +21,52 @@ Base = declarative_base()
 # Correspond with tables to be created in db
 class Restaurant(Base):
     ## TABLES
-    __tablename__ = 'some_table'
-    return
+    __tablename__ = 'restaurant'
+
+    ## MAPPER for columns
+    name = Column(
+        String(80),
+        # Meaning is needed to create new instance/row
+        nullable = False
+        )
+
+    id = Column(
+        Integer,
+        primary_key = True)
+
 
 class MenuItem(Base):
     ## TABLES
-    __tablename__ = 'some_table'
-    return
+    __tablename__ = 'menu_item'
 
+    ## MAPPER for columns
+    name = Column(
+        String(80),
+        nullable = False)
+
+    id = Column(
+        Integer,
+        primary_key = True)
+
+    course = Column(
+        String(250)
+        )
+
+    description = Column(
+        String(250)
+        )
+
+    price = Column(
+        String(8)
+        )
+
+    restaurant_id = Column(
+        Integer,
+        ForeignKey('restaurant.id')
+        )
+
+    # Specifies relationship to class restaurant
+    restaurant = relationship(Restaurant)
 
 ## ENDING configuration
 ###### insert at end of file ######
