@@ -14,6 +14,7 @@ from sqlalchemy.orm import relationship
 # Used in configuration code at end of file
 from sqlalchemy import create_engine
 
+# Declares a base class our custom classes will inherit from
 Base = declarative_base()
 
 
