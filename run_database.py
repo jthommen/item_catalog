@@ -1,5 +1,6 @@
-# Script that runs and populates the db
+#### Script that connects to DB via sqlalchemy orm ####
 
+## IMPORT
 # Import sqlalchemy data to populate db
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -7,7 +8,9 @@ from sqlalchemy.orm import sessionmaker
 # Import database configuration classes
 from database_setup import Base, Restaurant, MenuItem
 
-# Specifies database engine to communicate with
+
+## CONNECT
+# Specifies database engine to connect to
 engine = create_engine('sqlite:///restaurantmenu.db')
 
 # Binds engine to base class
@@ -19,6 +22,8 @@ DBSession = sessionmaker(bind = engine)
 # Staging object for database communication
 session = DBSession()
 
+
+## POPULATE
 # Creates instances for db entry
 myFirstRestaurant = Restaurant(name = "Juri's Pizza")
 salmonPizza = MenuItem(
