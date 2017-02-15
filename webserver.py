@@ -76,7 +76,27 @@ class WebserverHandler(BaseHTTPRequestHandler):
                 output += "<h1>Edit A Restaurant</h1>"
                 output += "<form method='POST' enctype='multipart/form-data' action='/restaurants/%s/edit'>" % restaurant.id
                 output += "<input name='RestaurantName' value='%s' type='text'>" % restaurant.name
-                output += "<input type='submit' value='Submit'></form>"
+                output += "<input type='submit' value='Edit'></form>"
+                output += "</body></html>"
+
+                self.wfile.write(output)
+                return
+
+            if self.path.endswith('/delete'):
+                restaurantID = self.path.split('/')[2]
+                restaurant = session.query(Restaurant).filter_by(id=restaurantID).one()
+
+                self.send_response(200)
+                self.send_header('Content-type', 'text/html')
+                self.end_headers()
+
+                output = ""
+                output += "<!DOCTYPE html>"
+                output += "<html><body>"
+                output += "<h1>Edit A Restaurant</h1>"
+                output += "<p>Are you sure you want to delete: %s?" % restaurant.name
+                output += "<form method='POST' enctype='multipart/form-data' action='/restaurants/%s/delete'>" % restaurant.id
+                output += "<input type='submit' value='Delete'></form>"
                 output += "</body></html>"
 
                 self.wfile.write(output)
@@ -126,8 +146,22 @@ class WebserverHandler(BaseHTTPRequestHandler):
                         self.send_header('Content-type', 'text/html')
                         self.send_header('Location', '/restaurants')
                         self.end_headers()
-                    else:
-                        print 'Error!'
+
+            if self.path.endswith('/delete'):
+                    restaurantID = self.path.split('/')[2]
+
+                    # Delete Restaurant
+                    restaurant = session.query(Restaurant).filter_by(id=restaurantID).one()
+                    if restaurant != []:
+                        session.delete(restaurant)
+                        session.commit()
+
+                        # Create redirect to /restaurants
+                        self.send_response(301)
+                        self.send_header('Content-type', 'text/html')
+                        self.send_header('Location', '/restaurants')
+                        self.end_headers()
+
         except:
             pass
 
