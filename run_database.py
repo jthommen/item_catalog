@@ -34,13 +34,13 @@ salmonPizza = MenuItem(
     price = '$16.00',
     restaurant = myFirstRestaurant)
 
-# Adds instances to staging area
-session.add(myFirstRestaurant)
-session.add(salmonPizza)
+# # Adds instances to staging area
+# session.add(myFirstRestaurant)
+# session.add(salmonPizza)
 
-# Commits staging area to db
-session.commit()
+# # Commits staging area to db
+# session.commit()
 
 # Queries items
-print session.query(Restaurant).all()
-print session.query(MenuItem).all()
+# print session.query(Restaurant).all()
+# print session.query(MenuItem).all()

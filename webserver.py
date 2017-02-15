@@ -1,11 +1,61 @@
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import cgi
 
+from database_setup import Base, Restaurant, MenuItem
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+engine = create_engine('sqlite:///restaurantmenu.db')
+Base.metadata.bind = engine
+DBSession = sessionmaker(bind=engine)
+session = DBSession()
+
+
 ## HANDLER SECTION
 ## Specifies which code to execute
 class WebserverHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         try:
+            if self.path.endswith('/restaurants'):
+
+                restaurants = session.query(Restaurant).all()
+
+                self.send_response(200)
+                self.send_header('Content-type', 'text/html')
+                self.end_headers()
+
+                output = ""
+                output += "<html><body>"
+                output += "<h1>Restaurant List</h1>"
+                for restaurant in restaurants:
+                        output += "<strong>%s</strong><br>" % restaurant.name
+                        output += "%s<br>" % restaurant.id
+                        output += "<a href='/restaurant/%s/edit'>Edit</a><br>" % restaurant.id
+                        output += "<a href='/restaurant/%s/delete'>Delete</a>" % restaurant.id
+                        output += "<br><br>"
+                output += "</body></html>"
+
+                self.wfile.write(output)
+                return
+
+            if self.path.endswith('/restaurants/new'):
+                self.send_response(200)
+                self.send_header('Content-type', 'text/html')
+                self.end_headers()
+
+                query = session.query(Restaurant).all()
+
+                output = ""
+                output += "<html><body>"
+                output += "<h1>Add A New Restaurant</h1>"
+                output += "<form method='POST' enctype='multipart/form-data' action='/restaurant/new'>"
+                output += "<input name='name' type='text/html'>"
+                output += "<input type='submit' value='Submit'></form>"
+                output += "</body></html>"
+
+                self.wfile.write(output)
+                return
+
             if self.path.endswith('/hello'):
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html')
@@ -21,7 +71,6 @@ class WebserverHandler(BaseHTTPRequestHandler):
                 output += "</body></html>"
 
                 self.wfile.write(output)
-                print output
                 return
 
             if self.path.endswith('/hola'):
@@ -38,7 +87,6 @@ class WebserverHandler(BaseHTTPRequestHandler):
                 output += "<input type='submit' value='Submit'></form>"
                 output += "</body></html>"
                 self.wfile.write(output)
-                print output
                 return
 
         except IOError:
