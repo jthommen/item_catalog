@@ -1,5 +1,5 @@
 # Import flask class from Flask library
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 
 ## Imports db and db connection modules
 # Imports db engine initialization
@@ -19,6 +19,18 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
+# Making API Endpoints (GET Request)
+@app.route('/restaurants/<int:restaurant_id>/menu/JSON/')
+def restaurantMenuJSON(restaurant_id):
+    restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
+    items = session.query(MenuItem).filter_by(restaurant_id=restaurant_id).all()
+    return jsonify(MenuItems=[item.serialize for item in items])
+
+@app.route('/restaurants/<int:restaurant_id>/menu/<int:menuitem_id>/JSON/')
+def menuItemJSON(restaurant_id, menuitem_id):
+    item = session.query(MenuItem).filter_by(id=menuitem_id).one()
+    return jsonify(MenuItem=[item.serialize])
+
 # Decorator that wraps app into flask route function
 # decorators can get stacked on top of each other
 @app.route('/')
@@ -35,7 +47,7 @@ def restaurantmenu(restaurant_id):
     return render_template('menu.html', restaurant=restaurant, items=items)
 
 
-@app.route('/restaurants/<int:restaurant_id>/new/', methods=['GET', 'POST'])
+@app.route('/restaurants/<int:restaurant_id>/menu/new/', methods=['GET', 'POST'])
 def newMenuItem(restaurant_id):
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
     if request.method == 'POST':
@@ -46,12 +58,13 @@ def newMenuItem(restaurant_id):
             restaurant_id = restaurant_id)
         session.add(newItem)
         session.commit()
+        flash('New menu item created!')
         return redirect(url_for('restaurantmenu', restaurant_id=restaurant_id))
     else:
         return render_template('newmenuitem.html', restaurant=restaurant)
 
 
-@app.route('/restaurants/<int:restaurant_id>/<int:menuitem_id>/edit/', methods = ['GET', 'POST'])
+@app.route('/restaurants/<int:restaurant_id>/menu/<int:menuitem_id>/edit/', methods = ['GET', 'POST'])
 def editMenuItem(restaurant_id, menuitem_id):
     item = session.query(MenuItem).filter_by(id=menuitem_id).one()
     if request.method == 'POST':
@@ -61,17 +74,19 @@ def editMenuItem(restaurant_id, menuitem_id):
         item.id = item.id
         session.add(item)
         session.commit()
+        flash('Menu item edited!')
         return redirect(url_for('restaurantmenu', restaurant_id=restaurant_id))
     else:
         return render_template('editmenuitem.html', item=item, restaurant_id=restaurant_id)
 
 
-@app.route('/restaurants/<int:restaurant_id>/<int:menuitem_id>/delete/', methods = ['GET', 'POST'])
+@app.route('/restaurants/<int:restaurant_id>/menu/<int:menuitem_id>/delete/', methods = ['GET', 'POST'])
 def deleteMenuItem(restaurant_id, menuitem_id):
     item = session.query(MenuItem).filter_by(id=menuitem_id).one()
     if request.method == 'POST':
         session.delete(item)
         session.commit()
+        flash('Menu item deleted!')
         return redirect(url_for('restaurantmenu', restaurant_id=restaurant_id))
     else:
         return render_template('deletemenuitem.html', item=item, restaurant_id=restaurant_id)
@@ -80,6 +95,7 @@ def deleteMenuItem(restaurant_id, menuitem_id):
 # Script only runs when directly run in python
 # and not imported as module
 if __name__ == '__main__':
+    app.secret_key = 'very_secret_key'
     # Reloads server on code change
     app.debug = True
     app.run(host = '0.0.0.0', port = 5000)
