@@ -35,6 +35,14 @@ class Restaurant(Base):
         Integer,
         primary_key = True)
 
+    @property
+    def serialize(self):
+        # Returns object data in easily serializeable format
+        return {
+            'name' : self.name,
+            'id' : self.id
+        }
+
 
 class MenuItem(Base):
     ## TABLES
@@ -77,7 +85,7 @@ class MenuItem(Base):
             'description' : self.description,
             'id' : self.id,
             'price' : self.price,
-            'course' : self.course,
+            'course' : self.course
         }
 
 ## ENDING configuration

@@ -2,9 +2,20 @@
 
 {% block content %}
 
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="alert alert-success">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                {% for message in messages %}
+                    <span class="glyphicon glyphicon-ok"></span>  <strong>{{message}}</strong>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
     <h2>Restaurants</h2>
     {% for restaurant in restaurants %}
-        ID: {{restaurant.id}} - <strong><a href="{{url_for('restaurantmenu', restaurant_id=restaurant.id)}}">{{restaurant.name}}</a></strong>
+        ID: {{restaurant.id}} - <strong><a href="{{url_for('restaurantMenu', restaurant_id=restaurant.id)}}">{{restaurant.name}}</a></strong>
         </br>
     {% endfor %}
 
