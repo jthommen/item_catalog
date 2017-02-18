@@ -66,9 +66,15 @@ def editMenuItem(restaurant_id, menuitem_id):
         return render_template('editmenuitem.html', item=item, restaurant_id=restaurant_id)
 
 
-@app.route('/restaurants/<int:restaurant_id>/<int:menuitem_id>/delete/')
+@app.route('/restaurants/<int:restaurant_id>/<int:menuitem_id>/delete/', methods = ['GET', 'POST'])
 def deleteMenuItem(restaurant_id, menuitem_id):
-    return "Page to delete a menu item"
+    item = session.query(MenuItem).filter_by(id=menuitem_id).one()
+    if request.method == 'POST':
+        session.delete(item)
+        session.commit()
+        return redirect(url_for('restaurantmenu', restaurant_id=restaurant_id))
+    else:
+        return render_template('deletemenuitem.html', item=item, restaurant_id=restaurant_id)
 
 
 # Script only runs when directly run in python
