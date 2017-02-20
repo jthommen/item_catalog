@@ -20,6 +20,37 @@ Base = declarative_base()
 
 ## CLASSES
 # Correspond with tables to be created in db
+class User(Base):
+     ## TABLES
+    __tablename__ = 'user'
+
+    ## MAPPER for columns
+    name = Column(
+        String(80),
+        # Meaning is needed to create new instance/row
+        nullable = False)
+
+    id = Column(
+        Integer,
+        primary_key = True)
+
+    picture = Column(String(250))
+
+    email = Column(
+        String(250),
+        nullable = False)
+
+    @property
+    def serialize(self):
+        # Returns object data in easily serializeable format
+        return {
+            'name' : self.name,
+            'id' : self.id,
+            'picture': self.picture,
+            'email': self.email
+        }
+
+
 class Restaurant(Base):
     ## TABLES
     __tablename__ = 'restaurant'
@@ -35,12 +66,20 @@ class Restaurant(Base):
         Integer,
         primary_key = True)
 
+    author_id = Column(
+        Integer,
+        ForeignKey('user.id')
+        )
+
+    author = relationship(User)
+
     @property
     def serialize(self):
         # Returns object data in easily serializeable format
         return {
             'name' : self.name,
-            'id' : self.id
+            'id' : self.id,
+            'author_id': self.author_id
         }
 
 
@@ -74,8 +113,14 @@ class MenuItem(Base):
         ForeignKey('restaurant.id')
         )
 
-    # Specifies relationship to class restaurant
+    author_id = Column(
+        Integer,
+        ForeignKey('user.id')
+        )
+
+    # Specifies relationships to other classes
     restaurant = relationship(Restaurant)
+    author = relationship(User)
 
     @property
     def serialize(self):
@@ -85,13 +130,15 @@ class MenuItem(Base):
             'description' : self.description,
             'id' : self.id,
             'price' : self.price,
-            'course' : self.course
+            'course' : self.course,
+            'author_id': self.author_id
         }
+
 
 ## ENDING configuration
 ###### insert at end of file ######
 engine = create_engine(
-    'sqlite:///restaurantmenu.db')
+    'sqlite:///restaurantmenuwithusers.db')
 
 # Enters data specified into db
 Base.metadata.create_all(engine)
