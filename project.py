@@ -239,14 +239,24 @@ def editRestaurant(restaurant_id):
     if 'username' not in login_session:
         return redirect('/login')
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
+    user_id = getUserID(login_session['email'])
     if request.method == 'POST':
-        restaurant.name = request.form['name']
-        session.add(restaurant)
-        session.commit()
-        flash('Restaurant edited!')
-        return redirect(url_for('restaurantMenu', restaurant_id=restaurant.id))
+        if user_id == restaurant.user_id:
+            restaurant.name = request.form['name']
+            session.add(restaurant)
+            session.commit()
+            flash('Restaurant edited!')
+            return redirect(url_for('restaurantMenu', restaurant_id=restaurant_id))
+        else:
+            flash('You are not authorized to do that!')
+            return redirect(url_for('restaurantMenu', restaurant_id=restaurant_id))
     else:
-        return render_template('editrestaurant.html', restaurant=restaurant)
+        if user_id == restaurant.user_id:
+            return render_template('editrestaurant.html', restaurant=restaurant)
+        else:
+            flash('You are not authorized to do that!')
+            return redirect(url_for('restaurants', restaurants=restaurants))
+
 
 @app.route('/restaurants/<int:restaurant_id>/delete/', methods = ['GET', 'POST'])
 def deleteRestaurant(restaurant_id):
@@ -254,15 +264,25 @@ def deleteRestaurant(restaurant_id):
         return redirect('/login')
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
     items = session.query(MenuItem).filter_by(restaurant_id=restaurant_id).all()
+    user_id = getUserID(login_session['email'])
     if request.method == 'POST':
-        session.delete(restaurant)
-        for item in items:
-            session.delete(item)
-        session.commit()
-        flash('Restaurant deleted!')
-        return redirect(url_for('restaurants'))
+        if user_id == restaurant.user_id:
+            session.delete(restaurant)
+            for item in items:
+                session.delete(item)
+            session.commit()
+            flash('Restaurant deleted!')
+            return redirect(url_for('restaurants'))
+        else:
+            flash('You are not authorized to do that!')
+            return redirect(url_for('restaurants'))
     else:
-        return render_template('deleterestaurant.html', restaurant=restaurant)
+        if user_id == restaurant.user_id:
+            return render_template('deleterestaurant.html', restaurant=restaurant)
+        else:
+            flash('You are not authorized to do that!')
+            return redirect(url_for('restaurants'))
+
 
 @app.route('/restaurants/<int:restaurant_id>/')
 def restaurantMenu(restaurant_id):
