@@ -10,7 +10,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 # Imports db setup
-from database_setup import Base, Restaurant, MenuItem
+from database_setup import Base, Restaurant, MenuItem, User
 
 # Imports session module
 from flask import session as login_session
@@ -33,7 +33,7 @@ CLIENT_ID = json.loads(
 app = Flask(__name__)
 
 # Specifies and creates db connection
-engine = create_engine('sqlite:///restaurantmenu.db')
+engine = create_engine('sqlite:///restaurantmenuwithusers.db')
 Base.metadata.bind = engine
 
 # Creates db connection session item
@@ -112,6 +112,8 @@ def gconnect():
     # Store the access token in the session for later use.
     login_session['credentials'] = credentials
     login_session['gplus_id'] = gplus_id
+    print credentials
+    print gplus_id
 
     # Get user info
     userinfo_url = "https://www.googleapis.com/oauth2/v1/userinfo"
@@ -123,6 +125,13 @@ def gconnect():
     login_session['username'] = data['name']
     login_session['picture'] = data['picture']
     login_session['email'] = data['email']
+
+    # # Checks if user exists, if it doesn't make one
+    # user_id = getUserID(login_session['email'])
+    # if not user_id:
+    #     user_id = createUser(login_session)
+    #     login_session['user_id'] = user_id
+
     flash("You are now logged in as %s" % login_session['username'])
     print "Done!"
     return render_template('welcome.html', userinfo=login_session)
@@ -161,6 +170,29 @@ def gdisconnect():
         return response
 
 
+## User Handling
+def creatUser(login_session):
+    newUser = User(
+        name=login_session['username'],
+        email=login_session['email'],
+        picture = login_session['picture'])
+    session.add(NewUser)
+    session.commit()
+    user = session.query(User).filter_by(email=login_session['email']).one()
+    return user.id
+
+def getUserInfo(user_id):
+    user = session.query(User).filter_by(id=user.id).one()
+    return user
+
+def getUserID(email):
+    try:
+        user = session.query(User).filter_by(email=email).one()
+        return user.id
+    except:
+        return None
+
+
 # Making API Endpoints (GET Request)
 @app.route('/restaurants/JSON/')
 def restaurantsJSON():
@@ -196,7 +228,7 @@ def newRestaurant():
         return redirect('/login')
     if request.method == 'POST':
         newRestaurant = Restaurant(
-            name = request.form['name'])
+            name = request.form['name'], user_id=login_session['user_id'])
         session.add(newRestaurant)
         session.commit()
         flash('New restaurant created!')
@@ -251,7 +283,9 @@ def newMenuItem(restaurant_id):
             name=request.form['name'],
             description = request.form['description'],
             price = request.form['price'],
-            restaurant_id = restaurant_id)
+            restaurant_id = restaurant_id,
+            user_id = restaurant.user_id
+            )
         session.add(newItem)
         session.commit()
         flash('New menu item created!')
