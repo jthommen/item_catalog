@@ -255,7 +255,7 @@ def editRestaurant(restaurant_id):
             return render_template('editrestaurant.html', restaurant=restaurant)
         else:
             flash('You are not authorized to do that!')
-            return redirect(url_for('restaurants', restaurants=restaurants))
+            return redirect(url_for('restaurants'))
 
 
 @app.route('/restaurants/<int:restaurant_id>/delete/', methods = ['GET', 'POST'])
@@ -322,39 +322,59 @@ def newMenuItem(restaurant_id):
             return render_template('newmenuitem.html', restaurant=restaurant)
         else:
             flash('You are not authorized to do that!')
-            return redirect(url_for('restaurants', restaurants=restaurants))
+            return redirect(url_for('restaurants'))
 
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:menuitem_id>/edit/', methods = ['GET', 'POST'])
 def editMenuItem(restaurant_id, menuitem_id):
     if 'username' not in login_session:
         return redirect('/login')
+    restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
     item = session.query(MenuItem).filter_by(id=menuitem_id).one()
+    user_id = getUserID(login_session['email'])
     if request.method == 'POST':
-        item.name = request.form['name']
-        item.description = request.form['description']
-        item.price = request.form['price']
-        item.id = item.id
-        session.add(item)
-        session.commit()
-        flash('Menu item edited!')
-        return redirect(url_for('restaurantMenu', restaurant_id=restaurant_id))
+        if user_id == restaurant.user_id:
+            item.name = request.form['name']
+            item.description = request.form['description']
+            item.price = request.form['price']
+            item.id = item.id
+            session.add(item)
+            session.commit()
+            flash('Menu item edited!')
+            return redirect(url_for('restaurantMenu', restaurant_id=restaurant_id))
+        else:
+            flash('You are not authorized to do that!')
+            return redirect(url_for('restaurants'))
     else:
-        return render_template('editmenuitem.html', item=item, restaurant_id=restaurant_id)
+        if user_id == restaurant.user_id:
+            return render_template('editmenuitem.html', item=item, restaurant_id=restaurant_id)
+        else:
+            flash('You are not authorized to do that!')
+            return redirect(url_for('restaurants'))
 
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:menuitem_id>/delete/', methods = ['GET', 'POST'])
 def deleteMenuItem(restaurant_id, menuitem_id):
     if 'username' not in login_session:
         return redirect('/login')
+    restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
     item = session.query(MenuItem).filter_by(id=menuitem_id).one()
+    user_id = getUserID(login_session['email'])
     if request.method == 'POST':
-        session.delete(item)
-        session.commit()
-        flash('Menu item deleted!')
-        return redirect(url_for('restaurantMenu', restaurant_id=restaurant_id))
+        if user_id == restaurant.user_id:
+            session.delete(item)
+            session.commit()
+            flash('Menu item deleted!')
+            return redirect(url_for('restaurantMenu', restaurant_id=restaurant_id))
+        else:
+            flash('You are not authorized to do that!')
+            return redirect(url_for('restaurants'))
     else:
-        return render_template('deletemenuitem.html', item=item, restaurant_id=restaurant_id)
+        if user_id == restaurant.user_id:
+            return render_template('deletemenuitem.html', item=item, restaurant_id=restaurant_id)
+        else:
+            flash('You are not authorized to do that!')
+            return redirect(url_for('restaurants'))
 
 
 # Script only runs when directly run in python
