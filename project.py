@@ -40,10 +40,9 @@ session = DBSession()
 
 
 # Login & Session Handling
-# Create anti-forgery token
-# Store it in the session for later validation
 @app.route('/login/')
 def showLogin():
+    """Creates anti-forgery token stored in session token"""
     state = ''.join(random.choice(
         string.ascii_uppercase + string.digits) for x in xrange(32))
     login_session['state'] = state
@@ -53,6 +52,7 @@ def showLogin():
 # Handler for Google login
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
+    """Logs in user with Google accounts"""
 
     # Validate state token
     if request.args.get('state') != login_session['state']:
@@ -141,6 +141,8 @@ def gconnect():
 # Disconnect for Google login
 @app.route('/gdisconnect')
 def gdisconnect():
+    """Disconnects Google signed-in users"""
+
     # Only disconnect a connected user.
     credentials = login_session.get('credentials')
     if credentials is None:
@@ -163,6 +165,7 @@ def gdisconnect():
 # Facebook Connect Handlers
 @app.route('/fbconnect', methods=['POST'])
 def fbconnect():
+    """Logs in user with Facebook accounts"""
     if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameter.'), 401)
         response.headers['Content-Type'] = 'application/json'
@@ -216,13 +219,12 @@ def fbconnect():
 # Handler for disconnecting facebook
 @app.route('/fbdisconnect')
 def fbdisconnect():
+    """Disconnects Facebook signed-in users"""
     facebook_id = login_session['facebook_id']
 
     # Include access token for successul logout
     access_token = login_session['access_token']
-    url = '''
-        https://graph.facebook.com/%s/permissions?access_token=%s
-        ''' % (facebook_id, access_token)
+    url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (facebook_id, access_token)
     h = httplib2.Http()
     result = h.request(url, 'DELETE')[1]
     return "you have been logged out"
@@ -231,6 +233,7 @@ def fbdisconnect():
 # General disconnect handler for generic logouts
 @app.route('/disconnect')
 def disconnect():
+    """Generic logout function that clears session cookie"""
     if 'provider' in login_session:
         if login_session['provider'] == 'google':
             gdisconnect()
@@ -253,6 +256,7 @@ def disconnect():
 
 # User Handling
 def createUser(login_session):
+    """Inserts a new user into the database"""
     newUser = User(
         name=login_session['username'],
         email=login_session['email'],
@@ -264,11 +268,13 @@ def createUser(login_session):
 
 
 def getUserInfo(user_id):
+    """Retrieves user information looked up by user id"""
     user = session.query(User).filter_by(id=user.id).one()
     return user
 
 
 def getUserID(email):
+    """Retrieves user information looked up by user email"""
     try:
         user = session.query(User).filter_by(email=email).one()
         return user.id
@@ -279,6 +285,7 @@ def getUserID(email):
 # Making API Endpoints (GET Request)
 @app.route('/restaurants/JSON/')
 def restaurantsJSON():
+    """JSON API endpoint for restaurant list"""
     restaurants = session.query(Restaurant).all()
     return jsonify(
         Restaurants=[restaurant.serialize for restaurant in restaurants])
@@ -286,6 +293,7 @@ def restaurantsJSON():
 
 @app.route('/restaurants/<int:restaurant_id>/menu/JSON/')
 def restaurantMenuJSON(restaurant_id):
+    """JSON API endpoint for specific restaurant menu"""
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
     items = session.query(MenuItem).filter_by(
         restaurant_id=restaurant_id).all()
@@ -294,21 +302,23 @@ def restaurantMenuJSON(restaurant_id):
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:menuitem_id>/JSON/')
 def menuItemJSON(restaurant_id, menuitem_id):
+    """JSON API endpoint for specific menu item"""
     item = session.query(MenuItem).filter_by(id=menuitem_id).one()
     return jsonify(MenuItem=[item.serialize])
 
 
 # Decorator that wraps app into flask route function
-# decorators can get stacked on top of each other
 @app.route('/')
 @app.route('/restaurants/')
 def restaurants():
+    """URL routing function for restaurant list"""
     restaurants = session.query(Restaurant).all()
     return render_template('restaurants.html', restaurants=restaurants)
 
 
 @app.route('/restaurants/new/', methods=['GET', 'POST'])
 def newRestaurant():
+    """URL routing function for adding new restaurants"""
     if 'username' not in login_session:
         return redirect('/login')
     if request.method == 'POST':
@@ -327,6 +337,7 @@ def newRestaurant():
     methods=['GET', 'POST']
     )
 def editRestaurant(restaurant_id):
+    """URL routing function for editing restaurants"""
     if 'username' not in login_session:
         return redirect('/login')
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
@@ -363,6 +374,7 @@ def editRestaurant(restaurant_id):
     methods=['GET', 'POST']
     )
 def deleteRestaurant(restaurant_id):
+    """URL routing function for deleting restaurants"""
     if 'username' not in login_session:
         return redirect('/login')
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
@@ -393,6 +405,7 @@ def deleteRestaurant(restaurant_id):
 
 @app.route('/restaurants/<int:restaurant_id>/')
 def restaurantMenu(restaurant_id):
+    """URL routing function for showing specific restaurant menus"""
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
     items = session.query(MenuItem).filter_by(restaurant_id=restaurant.id)
     user_id = getUserID(login_session['email'])
@@ -411,6 +424,7 @@ def restaurantMenu(restaurant_id):
     methods=['GET', 'POST']
     )
 def newMenuItem(restaurant_id):
+    """URL routing function for adding new menu item"""
     if 'username' not in login_session:
         return redirect('/login')
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
@@ -450,6 +464,7 @@ def newMenuItem(restaurant_id):
     methods=['GET', 'POST']
     )
 def editMenuItem(restaurant_id, menuitem_id):
+    """URL routing function for editing a menu item"""
     if 'username' not in login_session:
         return redirect('/login')
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
@@ -488,6 +503,7 @@ def editMenuItem(restaurant_id, menuitem_id):
     methods=['GET', 'POST']
     )
 def deleteMenuItem(restaurant_id, menuitem_id):
+    """URL routing function for deleting specific menu item"""
     if 'username' not in login_session:
         return redirect('/login')
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
