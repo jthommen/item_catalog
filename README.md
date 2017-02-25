@@ -32,8 +32,12 @@
 2. Download and install vagrant and virtual box
 3. Clone repo
 4. Open terminal and navigate to repo
-4. Launch vagrant virtual machine 'vagrant up' command from the terminal
-5. Log into vagrant virtual machine with 'vagrant ssh' command from terminal
-5. Run databasesetup.py to create sqlite database
-6. Run project.py in shell: python project.py
-7. Check out app on http://localhost:5000 per default
+5. Launch vagrant virtual machine 'vagrant up' command from the terminal
+6. Log into vagrant virtual machine with 'vagrant ssh' command from terminal
+7. For Google Oauth login, create your project at https://console.developers.google.com
+8. For Facebook Oauth login, create your project at https://developers.facebook.com
+9. Save the Oauth secrets in separate *.json files in repo folder
+10. Change app IDs in login.html templates according to your Google & Facebook app IDs
+11. Run databasesetup.py to create sqlite database
+12. Run project.py in terminal with 'python project.py' command from the terminal
+13. Check out app on http://localhost:5000 (vagrant default port)
