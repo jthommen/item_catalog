@@ -42,6 +42,6 @@
 12. Create vagrant role as superuser `createuser vagrant --superuser`
 13. Logout as postgres superuser `logout`
 14. Create project db with postgres `createdb restaurantmenuwithusers.db`
-11. Run `python databasesetup.py`
-12. Run project.py in terminal with `python project.py` command from the terminal
-13. Check out app on http://localhost:5000 (vagrant default port)
+15. Run `python databasesetup.py`
+16. Run project.py in terminal with `python project.py` command from the terminal
+17. Check out app on http://localhost:5000 (vagrant default port)
