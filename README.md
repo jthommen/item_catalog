@@ -38,6 +38,10 @@
 8. For Facebook Oauth login, create your project at https://developers.facebook.com
 9. Save the Oauth secrets in separate *.json files in repo folder
 10. Change app IDs in login.html templates according to your Google & Facebook app IDs
-11. Run databasesetup.py to create sqlite database
-12. Run project.py in terminal with 'python project.py' command from the terminal
+11. Change user to postgres super user `sudo -u postgres -i`
+12. Create vagrant role as superuser `createuser vagrant --superuser`
+13. Logout as postgres superuser `logout`
+14. Create project db with postgres `createdb restaurantmenuwithusers.db`
+11. Run `python databasesetup.py`
+12. Run project.py in terminal with `python project.py` command from the terminal
 13. Check out app on http://localhost:5000 (vagrant default port)

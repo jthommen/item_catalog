@@ -31,7 +31,7 @@ CLIENT_ID = json.loads(
 app = Flask(__name__)
 
 # Specifies and creates db connection
-engine = create_engine('sqlite:///restaurantmenuwithusers.db')
+engine = create_engine('postgresql:///restaurantmenuwithusers.db')
 Base.metadata.bind = engine
 
 # Creates db connection session item

@@ -123,7 +123,7 @@ class MenuItem(Base):
 ## ENDING configuration
 ###### insert at end of file ######
 engine = create_engine(
-    'sqlite:///restaurantmenuwithusers.db')
+    'postgresql:///restaurantmenuwithusers.db')
 
 # Enters data specified into db
 Base.metadata.create_all(engine)
